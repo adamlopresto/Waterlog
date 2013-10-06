@@ -12,4 +12,5 @@
     <string name="hello">Hello World, Waterlog!</string>
     <string name="app_name">Waterlog</string>
     <string name="snooze">Snooze</string>
+    <string name="notify">Notify</string>
 </resources>

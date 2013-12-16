@@ -17,10 +17,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class Waterlog extends Activity implements OnClickListener{
+public class Waterlog extends Activity implements OnClickListener, OnLongClickListener{
 	private int drinksToday;
 	private int ozToday;
 	private long lastDrink;
@@ -38,11 +39,14 @@ public class Waterlog extends Activity implements OnClickListener{
         findViewById(R.id.work).setOnClickListener(this);
         findViewById(R.id.snooze).setOnClickListener(this);
         findViewById(R.id.drink).setOnClickListener(this);
+
+        findViewById(R.id.coffee).setOnLongClickListener(this);
+        findViewById(R.id.home).setOnClickListener(this);
+        findViewById(R.id.work).setOnClickListener(this);
+        findViewById(R.id.snooze).setOnClickListener(this);
+        findViewById(R.id.drink).setOnClickListener(this);
         
-        SharedPreferences prefs = getSharedPreferences("Waterlog", MODE_PRIVATE);
-    	drinksToday = prefs.getInt("DRINKS_TODAY", 0);
-    	ozToday = prefs.getInt("OZ_TODAY", 0);
-    	lastDrink = prefs.getLong("LAST_DRINK_TIME", 0L);
+        updateText();
     	
     	updater = new Runnable(){
     		public void run(){
@@ -103,54 +107,79 @@ public class Waterlog extends Activity implements OnClickListener{
 	    	updateText();
 	        return true;
 	    case R.id.notify:
-	    	sendBroadcast(new Intent(this, WaterlogReceiver.class));
+	    	sendBroadcast(new Intent(this, WaterlogReceiver.class).setAction(WaterlogReceiver.ALARM_ACTION));
 	    }
 	    return false;
 	}
 
 	public void onClick(View v){
 
-		if (!DateUtils.isToday(lastDrink)){
-			drinksToday = 0;
-			ozToday = 0;
-		}
-	
-    	switch(v.getId()){
+		onLongClick(v);
+    	
+    	finish();
+    }
+
+	@Override
+	public boolean onLongClick(View v) {
+
+		switch(v.getId()){
     	case R.id.coffee:
-    		ozToday += 8;
+    		drink(this, 8, "Coffee");
     		break;
     	case R.id.home:
-    		ozToday += 12;
+    		drink(this, 12, "Home");
     		break;
     	case R.id.work:
-    		ozToday += 16;
+    		drink(this, 16, "Work");
     		break;
     	case R.id.snooze:
-    		drinksToday--;
+	    	setAlarmRel(this, DateUtils.HOUR_IN_MILLIS);
     		break;
     	case R.id.drink:
     		
     		try {
 	    		int oz = Integer.parseInt(((TextView)findViewById(R.id.oz)).getText().toString());
-	    		ozToday+=oz;
+	    		drink(this, oz, oz + " ounces");
     		} catch (NumberFormatException e){
     			findViewById(R.id.oz).requestFocus();
-    			return;
+    			return true;
     		}
     	}
-    	
+
+		updateText();
+		return true;
+	}
+
+
+	public static void drink(Context context, int oz, String msg) {
+        SharedPreferences prefs = context.getSharedPreferences("Waterlog", MODE_PRIVATE);
+    	int drinksToday = prefs.getInt("DRINKS_TODAY", 0);
+    	int ozToday = prefs.getInt("OZ_TODAY", 0);
+    	long lastDrink = prefs.getLong("LAST_DRINK_TIME", 0L);
+
+		if (!DateUtils.isToday(lastDrink)){
+			drinksToday = 0;
+			ozToday = 0;
+		}
+	
+		ozToday += oz;
     	drinksToday++;
     	lastDrink = System.currentTimeMillis();
-    	updatePrefs();
+
+    	SharedPreferences.Editor editor = prefs.edit();
+    	editor.putInt("DRINKS_TODAY", drinksToday);
+    	editor.putInt("OZ_TODAY", ozToday);
+    	editor.putLong("LAST_DRINK_TIME", lastDrink);
+    	editor.commit();
     	
     	if (ozToday < 100){
-	    	Toast.makeText(getApplicationContext(), TextUtils.concat(getText(R.string.drink_recorded),((TextView) v).getText()), Toast.LENGTH_LONG).show();
-	    	setAlarmRel(this, DateUtils.HOUR_IN_MILLIS);
+	    	Toast.makeText(context, TextUtils.concat(context.getText(R.string.drink_recorded),msg), Toast.LENGTH_LONG).show();
+	    	setAlarmRel(context, DateUtils.HOUR_IN_MILLIS);
     	} else {
-    		Toast.makeText(getApplicationContext(), R.string.end_of_day, Toast.LENGTH_LONG).show();
+    		Toast.makeText(context, R.string.end_of_day, Toast.LENGTH_LONG).show();
     		
     		TaskerIntent i = new TaskerIntent("Finished drinking");
-        	sendBroadcast(i);
+        	context.sendBroadcast(i);
         	
     		Calendar cal = Calendar.getInstance();
     		cal.set(Calendar.HOUR_OF_DAY, 9);
@@ -160,24 +189,24 @@ public class Waterlog extends Activity implements OnClickListener{
     		if (DateUtils.isToday(cal.getTimeInMillis())){
     			cal.add(Calendar.DATE, 1);
     		}
-    		setAlarmAbs(this, cal.getTimeInMillis());
+    		setAlarmAbs(context, cal.getTimeInMillis());
     	}
-    	
-    	finish();
-    }
+	}
+	
+	
 	
 	/**
 	 * Sets an alarm to an absolute time, as specified in ms from epic
 	 * @param wakeupTime Time at which to alarm
 	 */
-	static void setAlarmAbs(Context context, long wakeupTime){
+	public static void setAlarmAbs(Context context, long wakeupTime){
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
     	notificationManager.cancel(1);
     
     	
     	AlarmManager manager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
     	
-    	Intent alarmIntent = new Intent(context, WaterlogReceiver.class);
+    	Intent alarmIntent = new Intent(context, WaterlogReceiver.class).setAction(WaterlogReceiver.ALARM_ACTION);
     	PendingIntent contentIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, 0);
     	
     	manager.set(AlarmManager.RTC_WAKEUP, wakeupTime, contentIntent);
@@ -188,7 +217,7 @@ public class Waterlog extends Activity implements OnClickListener{
 	 * Sets an alarm for a given number of milliseconds into the future 
 	 * @param wakeupMS Number of milliseconds before wakeup
 	 */
-	static void setAlarmRel(Context context, long wakeupMS){
+	public static void setAlarmRel(Context context, long wakeupMS){
 		setAlarmAbs(context, System.currentTimeMillis()+wakeupMS);
 	}
 
@@ -202,6 +231,11 @@ public class Waterlog extends Activity implements OnClickListener{
 	}
     
     private void updateText(){
+        SharedPreferences prefs = getSharedPreferences("Waterlog", MODE_PRIVATE);
+    	drinksToday = prefs.getInt("DRINKS_TODAY", 0);
+    	ozToday = prefs.getInt("OZ_TODAY", 0);
+    	lastDrink = prefs.getLong("LAST_DRINK_TIME", 0L);
+
 		((TextView)findViewById(R.id.drinks_today)).setText(TextUtils.concat(getText(R.string.drinks_today)," ",
 				String.valueOf(drinksToday)));
 		((TextView)findViewById(R.id.oz_today)).setText(TextUtils.concat(getText(R.string.ounces_today)," ",

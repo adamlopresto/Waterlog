@@ -77,10 +77,21 @@ public class WaterlogReceiver extends BroadcastReceiver {
 	    	//notification.sound = Uri.withAppendedPath(Audio.Media.INTERNAL_CONTENT_URI, "14");    	
 	    	builder.setSound(Uri.withAppendedPath(Audio.Media.INTERNAL_CONTENT_URI, "14"));    	
 	    	
+	    	Waterlog.DrinkType next = Waterlog.whatsNext(context);
+	    	if (next != null){
+		    	Intent drinkIntent = new Intent(context, WaterlogReceiver.class).setAction(DRINK_ACTION);
+		    	drinkIntent.putExtra("oz", next.oz());
+		    	drinkIntent.putExtra("msg", next.name());
+		    	PendingIntent drinkPI = PendingIntent.getBroadcast(context, 0, drinkIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		    	
+		    	builder.addAction(R.drawable.ic_action_accept, next.name(), drinkPI);
+	    	}
+
 	    	Intent snoozeIntent = new Intent(context, WaterlogReceiver.class).setAction(SNOOZE_ACTION);
 	    	PendingIntent snoozePI = PendingIntent.getBroadcast(context, 0, snoozeIntent, 0);
 	    	
 	    	builder.addAction(R.drawable.ic_action_alarms, "Snooze", snoozePI);
+	    	
 	    	
 	    	/*private static*/ final int HELLO_ID = 1;
 	
@@ -89,6 +100,8 @@ public class WaterlogReceiver extends BroadcastReceiver {
 
 		} else if (SNOOZE_ACTION.equals(intent.getAction())) {
 			Waterlog.setAlarmRel(context, DateUtils.HOUR_IN_MILLIS);
+		} else if (DRINK_ACTION.equals(intent.getAction())){
+			Waterlog.drink(context, intent.getIntExtra("oz", 12), intent.getStringExtra("msg"));
 		}
 	}
 	

@@ -9,6 +9,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -28,23 +30,45 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
 	private Runnable updater;
 	private Handler handler;
 	
+	private View coffee;
+	private View home;
+	private View work;
+	
+	public enum DrinkType {
+		Home(12), Work(16), Coffee(8);
+		
+		private final int oz;
+		DrinkType(int oz){
+			this.oz = oz;
+		}
+		
+		public int oz(){
+			return oz;
+		}
+	}
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
     	
         setContentView(R.layout.main);
-        findViewById(R.id.coffee).setOnClickListener(this);
-        findViewById(R.id.home).setOnClickListener(this);
-        findViewById(R.id.work).setOnClickListener(this);
+
+        coffee = findViewById(R.id.coffee);
+        home = findViewById(R.id.home);
+        work = findViewById(R.id.work);
+
+        coffee.setOnClickListener(this);
+        home.setOnClickListener(this);
+        work.setOnClickListener(this);
         findViewById(R.id.snooze).setOnClickListener(this);
         findViewById(R.id.drink).setOnClickListener(this);
 
-        findViewById(R.id.coffee).setOnLongClickListener(this);
-        findViewById(R.id.home).setOnClickListener(this);
-        findViewById(R.id.work).setOnClickListener(this);
-        findViewById(R.id.snooze).setOnClickListener(this);
-        findViewById(R.id.drink).setOnClickListener(this);
+        coffee.setOnLongClickListener(this);
+        home.setOnLongClickListener(this);
+        work.setOnLongClickListener(this);
+        findViewById(R.id.snooze).setOnLongClickListener(this);
+        findViewById(R.id.drink).setOnLongClickListener(this);
         
         updateText();
     	
@@ -244,6 +268,53 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
 		((TextView)findViewById(R.id.last_drink)).setText(TextUtils.concat(getText(R.string.last_drink_at)," ",
 				lastDrink == 0 ? "" :
 				DateUtils.getRelativeDateTimeString(this, lastDrink, 0, DateUtils.WEEK_IN_MILLIS, 0)));
+		
+		DrinkType next = whatsNext(this);
+
+		if (next == DrinkType.Home)
+			home.getBackground().setColorFilter(Color.CYAN,PorterDuff.Mode.MULTIPLY);
+		else 
+			home.setBackgroundResource(android.R.drawable.btn_default);
+
+		if (next == DrinkType.Coffee)
+			coffee.getBackground().setColorFilter(Color.CYAN,PorterDuff.Mode.MULTIPLY);
+		else 
+			coffee.setBackgroundResource(android.R.drawable.btn_default);
+
+		if (next == DrinkType.Work)
+			work.getBackground().setColorFilter(Color.CYAN,PorterDuff.Mode.MULTIPLY);
+		else 
+			work.setBackgroundResource(android.R.drawable.btn_default);
+
+
 	}
+    
+    
+    public static DrinkType whatsNext(Context context){
+        SharedPreferences prefs = context.getSharedPreferences("Waterlog", MODE_PRIVATE);
+    	int drinksToday = prefs.getInt("DRINKS_TODAY", 0);
+    	int ozToday = prefs.getInt("OZ_TODAY", 0);
+    	long lastDrink = prefs.getLong("LAST_DRINK_TIME", 0L);
+
+		if (!DateUtils.isToday(lastDrink)){
+			drinksToday = 0;
+			ozToday = 0;
+		}
+
+		if (ozToday >= 100){
+			return null;
+		}
+
+    	Calendar cal = Calendar.getInstance();
+    	switch (cal.get(Calendar.DAY_OF_WEEK)){
+    	case Calendar.SATURDAY: 
+    	case Calendar.SUNDAY:
+	    	if (drinksToday < 2)
+	    		return DrinkType.Coffee;
+	    	return DrinkType.Home;
+    	default:
+    		return DrinkType.Work;
+    	}
+    }
 
 }

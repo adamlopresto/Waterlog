@@ -13,4 +13,6 @@
     <string name="app_name">Waterlog</string>
     <string name="snooze">Snooze</string>
     <string name="notify">Notify</string>
+    <string name="ounces">Ounces</string>
+    <string name="drink">Drink</string>
 </resources>

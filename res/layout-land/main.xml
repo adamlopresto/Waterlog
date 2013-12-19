@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" android:baselineAligned="false">
+
+<RelativeLayout
     android:layout_height="fill_parent"
-    >
+    android:layout_width="0sp"
+    android:layout_weight="1"
+    android:orientation="vertical" >
+
     <Button 
 		android:text="@string/home"
 		android:id="@+id/home"
@@ -50,21 +56,28 @@
         android:layout_toLeftOf="@id/drink"
         android:hint="@string/ounces"
         android:inputType="number" />
+
+</RelativeLayout>
+<LinearLayout 
+    android:orientation="vertical"
+    android:layout_width="0sp"
+    android:layout_weight="1"
+    android:layout_height="match_parent"
+    >
    	
 	<TextView
 	    android:id="@+id/drinks_today"
 	    style="@style/text"
-	    android:layout_below="@id/drink"
 	    android:text="@string/drinks_today" />
 <TextView  
 	    android:text="@string/ounces_today"
 		android:id="@+id/oz_today"
 		style="@style/text"  
-	android:layout_below="@+id/drinks_today"/>
+	/>
 	<TextView  
 	    android:text="@string/last_drink_at"
 		android:id="@+id/last_drink"
 		style="@style/text"  
-	android:layout_below="@id/oz_today"/>
-	
-</RelativeLayout>
+	/>
+	</LinearLayout>
+</LinearLayout>

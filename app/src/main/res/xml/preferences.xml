@@ -41,7 +41,7 @@
         android:numeric="integer"
         />
     <EditTextPreference
-        android:key="repeat_interveral"
+        android:key="repeat_interval"
         android:title="Repeat interval"
         android:summary="Time to wait after an alert before alerting again"
         android:numeric="integer"

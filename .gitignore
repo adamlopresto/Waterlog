@@ -28,7 +28,7 @@ local.properties
 .gradle
 /*/local.properties
 /*/out
-/*/*/build
+app/build
 /*/*/production
 *.iml
 *.iws

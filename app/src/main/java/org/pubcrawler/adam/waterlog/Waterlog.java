@@ -1,6 +1,7 @@
 package org.pubcrawler.adam.waterlog;
 
 import java.util.Calendar;
+import java.util.Set;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -13,6 +14,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.Menu;
@@ -23,16 +25,19 @@ import android.view.View.OnLongClickListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 public class Waterlog extends Activity implements OnClickListener, OnLongClickListener{
 	private int drinksToday;
 	private int ozToday;
 	private long lastDrink;
 	private Runnable updater;
 	private Handler handler;
-	
-	private View coffee;
-	private View home;
-	private View work;
+
+    private TextView home;
+	private TextView coffee;
+	private TextView work;
 	
 	public enum DrinkType {
 		Home(12), Work(16), Coffee(8);
@@ -54,12 +59,18 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
     	
         setContentView(R.layout.main);
 
-        coffee = findViewById(R.id.coffee);
-        home = findViewById(R.id.home);
-        work = findViewById(R.id.work);
+        home = (TextView) findViewById(R.id.home);
+        coffee = (TextView)findViewById(R.id.coffee);
+        work = (TextView) findViewById(R.id.work);
 
-        coffee.setOnClickListener(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        home.setText(prefs.getString(SettingsActivity.KEY_BUTTON1_LABEL, ""));
+        coffee.setText(prefs.getString(SettingsActivity.KEY_BUTTON2_LABEL, ""));
+        work.setText(prefs.getString(SettingsActivity.KEY_BUTTON3_LABEL, ""));
+
         home.setOnClickListener(this);
+        coffee.setOnClickListener(this);
         work.setOnClickListener(this);
         findViewById(R.id.snooze).setOnClickListener(this);
         findViewById(R.id.drink).setOnClickListener(this);
@@ -150,37 +161,41 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
 	@Override
 	public boolean onLongClick(View v) {
 
-		switch(v.getId()){
-    	case R.id.coffee:
-    		drink(this, 8, "Coffee");
-    		break;
-    	case R.id.home:
-    		drink(this, 12, "Home");
-    		break;
-    	case R.id.work:
-    		drink(this, 16, "Work");
-    		break;
-    	case R.id.snooze:
-	    	setAlarmRel(this, DateUtils.HOUR_IN_MILLIS);
-    		break;
-    	case R.id.drink:
-    		
-    		try {
-	    		@SuppressWarnings("ConstantConditions") int oz = Integer.parseInt(((TextView)findViewById(R.id.oz)).getText().toString());
-	    		drink(this, oz, oz + " ounces");
-    		} catch (NumberFormatException e){
-    			findViewById(R.id.oz).requestFocus();
-    			return true;
-    		}
-    	}
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        switch(v.getId()){
+            case R.id.home:
+                drink(this, SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_BUTTON1_OZ),
+                        prefs.getString(SettingsActivity.KEY_BUTTON1_LABEL, ""));
+                break;
+            case R.id.coffee:
+                drink(this, SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_BUTTON2_OZ),
+                        prefs.getString(SettingsActivity.KEY_BUTTON2_LABEL, ""));
+                break;
+            case R.id.work:
+                drink(this, SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_BUTTON3_OZ),
+                        prefs.getString(SettingsActivity.KEY_BUTTON3_LABEL, ""));
+                break;
+            case R.id.snooze:
+                setAlarmRel(this, DateUtils.HOUR_IN_MILLIS);
+                break;
+            case R.id.drink:
 
-		updateText();
-		return true;
-	}
+                try {
+                    @SuppressWarnings("ConstantConditions") int oz = Integer.parseInt(((TextView)findViewById(R.id.oz)).getText().toString());
+                    drink(this, oz, oz + " ounces");
+                } catch (NumberFormatException e){
+                    findViewById(R.id.oz).requestFocus();
+                    return true;
+                }
+        }
+
+        updateText();
+        return true;
+    }
 
 
-	public static void drink(Context context, int oz, String msg) {
-        SharedPreferences prefs = context.getSharedPreferences("Waterlog", MODE_PRIVATE);
+	public static void drink(@NotNull Context context, int oz, String msg) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     	int drinksToday = prefs.getInt("DRINKS_TODAY", 0);
     	int ozToday = prefs.getInt("OZ_TODAY", 0);
     	long lastDrink = prefs.getLong("LAST_DRINK_TIME", 0L);
@@ -200,9 +215,10 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
     	editor.putLong("LAST_DRINK_TIME", lastDrink);
     	editor.commit();
     	
-    	if (ozToday < 100){
+    	if (ozToday < SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_GOAL)){
 	    	Toast.makeText(context, TextUtils.concat(context.getText(R.string.drink_recorded),msg), Toast.LENGTH_LONG).show();
-	    	setAlarmRel(context, DateUtils.HOUR_IN_MILLIS);
+	    	setAlarmRel(context, DateUtils.MINUTE_IN_MILLIS*
+                    SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_DRINK_INTERVAL));
     	} else {
     		Toast.makeText(context, R.string.end_of_day, Toast.LENGTH_LONG).show();
     		
@@ -210,8 +226,8 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
         	context.sendBroadcast(i);
         	
     		Calendar cal = Calendar.getInstance();
-    		cal.set(Calendar.HOUR_OF_DAY, 9);
-    		cal.set(Calendar.MINUTE, 0);
+    		cal.set(Calendar.HOUR_OF_DAY, SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_START_HOUR));
+            cal.set(Calendar.MINUTE, SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_START_MINUTE));
     		cal.set(Calendar.SECOND, 0);
     		cal.set(Calendar.MILLISECOND, 0);
     		if (DateUtils.isToday(cal.getTimeInMillis())){
@@ -250,7 +266,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
 	}
 
 	private void updatePrefs() {
-		SharedPreferences prefs = getSharedPreferences("Waterlog", MODE_PRIVATE);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     	SharedPreferences.Editor editor = prefs.edit();
     	editor.putInt("DRINKS_TODAY", drinksToday);
     	editor.putInt("OZ_TODAY", ozToday);
@@ -259,7 +275,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
 	}
     
     private void updateText(){
-        SharedPreferences prefs = getSharedPreferences("Waterlog", MODE_PRIVATE);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     	drinksToday = prefs.getInt("DRINKS_TODAY", 0);
     	ozToday = prefs.getInt("OZ_TODAY", 0);
     	lastDrink = prefs.getLong("LAST_DRINK_TIME", 0L);
@@ -292,10 +308,14 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
 
 
 	}
-    
-    
-    public static DrinkType whatsNext(Context context){
-        SharedPreferences prefs = context.getSharedPreferences("Waterlog", MODE_PRIVATE);
+
+    @Nullable
+    public static DrinkType whatsNext(@NotNull Context context){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if (!prefs.getBoolean(SettingsActivity.KEY_GUESS_NEXT, false))
+            return null;
+
     	int drinksToday = prefs.getInt("DRINKS_TODAY", 0);
     	int ozToday = prefs.getInt("OZ_TODAY", 0);
     	long lastDrink = prefs.getLong("LAST_DRINK_TIME", 0L);
@@ -305,7 +325,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
 			ozToday = 0;
 		}
 
-		if (ozToday >= 100){
+		if (ozToday >= SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_GOAL)){
 			return null;
 		}
 

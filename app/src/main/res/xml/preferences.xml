@@ -33,25 +33,37 @@
         android:key="goal"
         android:title="Goal"
         android:numeric="integer"
+        android:defaultValue="100"
         />
     <EditTextPreference
         android:key="drink_interval"
         android:title="Interval"
         android:summary="Time to wait (in minutes) after each drink before notifying again."
+        android:defaultValue="60"
         android:numeric="integer"
         />
     <EditTextPreference
         android:key="repeat_interval"
         android:title="Repeat interval"
-        android:summary="Time to wait after an alert before alerting again"
+        android:summary="Time (in minutes) to wait after an alert before alerting again"
+        android:defaultValue="15"
         android:numeric="integer"
         />
 
     <EditTextPreference
-        android:key="start_time"
-        android:title="Start time"
-        android:summary="At what time in the morning should the first alarm go off?"
-        android:inputType="time"
+        android:key="start_hour"
+        android:title="Start hour"
+        android:summary="At what hour of the morning should the first alarm go off?"
+        android:defaultValue="9"
+        android:numeric="integer"
+        />
+
+    <EditTextPreference
+        android:key="start_minute"
+        android:title="Start minute"
+        android:summary="How many minutes after the hour should the first alarm go off?"
+        android:numeric="integer"
+        android:defaultValue="0"
         />
 
     <CheckBoxPreference
@@ -62,6 +74,7 @@
     <RingtonePreference
         android:key="ringtone"
         android:title="Sound"
+        android:ringtoneType="notification"
         />
 
     <CheckBoxPreference

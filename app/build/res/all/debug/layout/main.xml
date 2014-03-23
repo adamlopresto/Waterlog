@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+    <Button 
+		android:text="@string/home"
+		android:id="@+id/home"
+		style="@style/button"
+		android:layout_marginTop="6sp"		
+   	/>
+    <Button
+    	android:id="@+id/coffee" 
+    	android:text="@string/coffee" 
+		style="@style/button" 
+		android:layout_below="@id/home"
+	/>
+    <Button
+    	android:id="@+id/work" 
+    	android:text="@string/work"
+		style="@style/button"  
+		android:layout_below="@id/coffee"
+	 
+    />
+    <Button
+    	android:id="@+id/snooze" 
+    	android:text="@string/snooze"
+		style="@style/button"  
+		android:layout_below="@id/work"
+	 
+    />
+    <Button
+   		android:id="@+id/drink"
+   		android:text="@string/drink"
+   		android:layout_below="@id/snooze"
+   		android:layout_alignRight="@id/snooze"
+   		android:layout_height="wrap_content"
+   		android:layout_width="wrap_content"
+   		android:state_enabled="false"
+   		style="@style/button"
+	/> 	
+
+    <EditText
+        android:id="@+id/oz"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/drink"
+        android:layout_below="@id/snooze"
+        android:layout_toLeftOf="@id/drink"
+        android:hint="@string/ounces"
+        android:inputType="number"
+        />
+
+    <TextView
+        android:id="@+id/drinks_today"
+        style="@style/text"
+        android:layout_below="@id/drink"
+        android:text="@string/drinks_today"
+        />
+    <TextView
+        android:text="@string/ounces_today"
+        android:id="@+id/oz_today"
+        style="@style/text"
+        android:layout_below="@+id/drinks_today"
+        />
+	<TextView  
+	    android:text="@string/last_drink_at"
+		android:id="@+id/last_drink"
+		style="@style/text"  
+        android:layout_below="@id/oz_today"
+        />
+	
+</RelativeLayout>
+<!-- From: file:/C:/Users/adam/AndroidStudioProjects/waterlog/app/src/main/res/layout/main.xml -->

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="end_of_day">That\'s it for the day.</string>
+    <string name="drink_recorded">Drink recorded:\u0020</string>
+    <string name="last_drink_at">Last drink</string>
+    <string name="ounces_today">Ounces today:</string>
+    <string name="drinks_today">Drinks today:</string>
+    <string name="reset">Reset</string>
+    <string name="work">Work</string>
+    <string name="coffee">Coffee</string>
+    <string name="home">Home</string>
+    <string name="app_name">Waterlog</string>
+    <string name="snooze">Snooze</string>
+    <string name="notify">Notify</string>
+    <string name="ounces">Ounces</string>
+    <string name="drink">Drink</string>
+</resources>

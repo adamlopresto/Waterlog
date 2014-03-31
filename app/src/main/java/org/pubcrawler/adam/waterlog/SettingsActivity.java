@@ -23,6 +23,22 @@ public class SettingsActivity extends Activity {
     public static final String KEY_FANCY_VIBRATION = "fancy_vibration";
     public static final String KEY_RINGTONE = "ringtone";
     public static final String KEY_GUESS_NEXT = "guess_next";
+    public static final String OZ_TODAY = "OZ_TODAY";
+    public static final String DRINKS_TODAY = "DRINKS_TODAY";
+    public static final String LAST_DRINK_TIME = "LAST_DRINK_TIME";
+
+    /**
+     * Gets an integer preference out of a SharePreferences, even though it's stored as a String.
+     * Nasty kludge.
+     * Always returns -1 if it can't convert.
+     */
+    public static int getIntPref(@NotNull SharedPreferences prefs, String key) {
+        try {
+            return Integer.parseInt(prefs.getString(key, null));
+        } catch (Exception e) {
+            return -1;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,19 +57,6 @@ public class SettingsActivity extends Activity {
 
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.preferences);
-        }
-    }
-
-    /**
-     * Gets an integer preference out of a SharePreferences, even though it's stored as a String.
-     * Nasty kludge.
-     * Always returns -1 if it can't convert.
-     */
-    public static int getIntPref(@NotNull SharedPreferences prefs, String key){
-        try {
-            return Integer.parseInt(prefs.getString(key, null));
-        } catch (Exception e) {
-            return -1;
         }
     }
 }

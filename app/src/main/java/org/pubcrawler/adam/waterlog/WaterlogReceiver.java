@@ -1,6 +1,5 @@
 package org.pubcrawler.adam.waterlog;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -9,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore.Audio;
 import android.support.v4.app.NotificationCompat;
 import android.text.format.DateUtils;
 
@@ -106,7 +104,22 @@ public class WaterlogReceiver extends BroadcastReceiver {
                     SettingsActivity.KEY_DRINK_INTERVAL)*DateUtils.MINUTE_IN_MILLIS);
 		} else if (DRINK_ACTION.equals(intent.getAction())){
 			Waterlog.drink(context, intent.getIntExtra("oz", 12), intent.getStringExtra("msg"));
-		}
-	}
-	
+        } else if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+            long lastDrink = prefs.getLong(SettingsActivity.LAST_DRINK_TIME, 0L);
+            int ozToday = prefs.getInt(SettingsActivity.OZ_TODAY, 0);
+            int goal = SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_GOAL);
+            boolean isToday = DateUtils.isToday(lastDrink);
+            if (ozToday >= goal) {
+                //We've had enough, so set the alarm for the first thing in the morning.
+                //But we need isToday to tell us whether it's this morning or tomorrow morning.
+                Waterlog.setAlarmMorning(context, prefs, !isToday);
+            } else {
+                Waterlog.setAlarmAbs(context, lastDrink +
+                        SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_DRINK_INTERVAL)
+                                * DateUtils.MINUTE_IN_MILLIS);
+            }
+
+        }
+    }
+
 }

@@ -24,8 +24,6 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="org.pubcrawler.adam.waterlog.WaterlogReceiver" />
-
         <activity
             android:name="org.pubcrawler.adam.waterlog.SettingsActivity"
             android:label="@string/title_activity_settings" />

@@ -39,6 +39,8 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
 	private TextView coffee;
 	private TextView work;
 
+    private int hilightedColor = 0xFF00bcd4;
+
     public static void drink(@NotNull Context context, int oz, String msg) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int drinksToday = prefs.getInt(SettingsActivity.DRINKS_TODAY, 0);
@@ -58,7 +60,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
         editor.putInt(SettingsActivity.DRINKS_TODAY, drinksToday);
         editor.putInt(SettingsActivity.OZ_TODAY, ozToday);
         editor.putLong(SettingsActivity.LAST_DRINK_TIME, lastDrink);
-        editor.commit();
+        editor.apply();
 
         if (ozToday < SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_GOAL)) {
             Toast.makeText(context, TextUtils.concat(context.getText(R.string.drink_recorded), msg), Toast.LENGTH_LONG).show();
@@ -299,7 +301,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
         editor.putInt(SettingsActivity.DRINKS_TODAY, drinksToday);
         editor.putInt(SettingsActivity.OZ_TODAY, ozToday);
         editor.putLong(SettingsActivity.LAST_DRINK_TIME, lastDrink);
-        editor.commit();
+        editor.apply();
     }
     
     private void updateText(){
@@ -344,7 +346,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
         if (v != null) {
             Drawable d = v.getBackground();
             if (d != null)
-                d.setColorFilter(Color.CYAN, PorterDuff.Mode.MULTIPLY);
+                d.setColorFilter(hilightedColor, PorterDuff.Mode.MULTIPLY);
         }
     }
 

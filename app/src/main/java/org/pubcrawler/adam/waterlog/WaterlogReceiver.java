@@ -1,15 +1,21 @@
 package org.pubcrawler.adam.waterlog;
 
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.text.format.DateUtils;
+import android.util.Log;
+
+import java.io.IOException;
 
 public class WaterlogReceiver extends BroadcastReceiver {
 
@@ -23,12 +29,11 @@ public class WaterlogReceiver extends BroadcastReceiver {
 
 		if (ALARM_ACTION.equals(intent.getAction())){
 			Waterlog.setAlarmRel(context, SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_REPEAT_INTERVAL)*DateUtils.MINUTE_IN_MILLIS);
-			
-			String ns = Context.NOTIFICATION_SERVICE;
-	    	NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(ns);
-	    	
-	    	int icon = R.drawable.icon;
-	    	CharSequence tickerText = "Get a drink!";
+
+            NotificationManagerCompat mNotificationManager = NotificationManagerCompat.from(context);
+
+            int icon = R.drawable.icon;
+            CharSequence tickerText = "Get a drink!";
 	    	//long when = System.currentTimeMillis();
 	
 	    	NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
@@ -51,6 +56,16 @@ public class WaterlogReceiver extends BroadcastReceiver {
 	    	builder.setContentTitle(contentTitle);
 	    	builder.setContentText(contentText);
 	    	//notification.defaults |= Notification.DEFAULT_SOUND;
+
+            try {
+                AssetManager assets = context.getAssets();
+                Bitmap bitmap = BitmapFactory.decodeStream(assets.open("Drinking_fountain.jpg"));
+                builder.extend(new NotificationCompat.WearableExtender().setBackground(bitmap));
+                Log.e("Waterlog", "Successfully set background (allegedly)");
+            } catch (IOException ignored) {
+                Log.e("Waterlog", "Error setting background bitmap, " + ignored);
+            }
+
 
             if (prefs.getBoolean(SettingsActivity.KEY_FANCY_VIBRATION, false)) {
                 long dit = 70L;

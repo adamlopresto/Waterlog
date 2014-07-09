@@ -2,12 +2,12 @@ package org.pubcrawler.adam.waterlog;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
+import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,7 +61,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
         editor.putInt(SettingsActivity.DRINKS_TODAY, drinksToday);
         editor.putInt(SettingsActivity.OZ_TODAY, ozToday);
         editor.putLong(SettingsActivity.LAST_DRINK_TIME, lastDrink);
-        editor.apply();
+        editor.commit();
 
         if (ozToday < SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_GOAL)) {
             Toast.makeText(context, TextUtils.concat(context.getText(R.string.drink_recorded), msg), Toast.LENGTH_LONG).show();
@@ -249,6 +250,16 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
             case R.id.notify:
                 sendBroadcast(new Intent(this, WaterlogReceiver.class).setAction(WaterlogReceiver.ALARM_ACTION));
                 return true;
+            case R.id.about:
+                final TextView textView = new TextView(this);
+                textView.setText(R.string.about_message);
+                textView.setMovementMethod(LinkMovementMethod.getInstance());
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.app_name);
+                builder.setView(textView);
+                builder.setPositiveButton(android.R.string.ok, null);
+                builder.show();
+                return true;
         }
         return false;
     }
@@ -301,7 +312,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
         editor.putInt(SettingsActivity.DRINKS_TODAY, drinksToday);
         editor.putInt(SettingsActivity.OZ_TODAY, ozToday);
         editor.putLong(SettingsActivity.LAST_DRINK_TIME, lastDrink);
-        editor.apply();
+        editor.commit();
     }
     
     private void updateText(){

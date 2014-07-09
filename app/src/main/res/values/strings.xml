@@ -14,4 +14,7 @@
     <string name="notify">Notify</string>
     <string name="ounces">Ounces</string>
     <string name="drink">Drink</string>
+    <string name="about_message"><b>Waterlog</b> by Adam Lopresto\n
+        Drinking fountain image by <a href="http://commons.wikimedia.org/wiki/File:Drinking_fountain.jpg">Darwin Bell</a>
+    </string>
 </resources>

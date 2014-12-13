@@ -1,7 +1,7 @@
 
 apply plugin: 'android'
 dependencies {
-    compile 'com.android.support:support-v4:20.0.+'
+    compile 'com.android.support:support-v4:21.0.3'
     compile 'com.intellij:annotations:+@jar'
 }
 
@@ -11,12 +11,12 @@ android {
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 19
+        targetSdkVersion 21
     }
 
     buildTypes {
         release {
-            runProguard false
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }

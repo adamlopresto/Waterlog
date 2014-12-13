@@ -9,13 +9,18 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.text.format.DateUtils;
 import android.util.Log;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Set;
 
 public class WaterlogReceiver extends BroadcastReceiver {
 
@@ -26,6 +31,8 @@ public class WaterlogReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        dumpIntent(intent);
 
 		if (ALARM_ACTION.equals(intent.getAction())){
 			Waterlog.setAlarmRel(context, SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_REPEAT_INTERVAL)*DateUtils.MINUTE_IN_MILLIS);
@@ -61,11 +68,12 @@ public class WaterlogReceiver extends BroadcastReceiver {
                 AssetManager assets = context.getAssets();
                 Bitmap bitmap = BitmapFactory.decodeStream(assets.open("Drinking_fountain.jpg"));
                 builder.extend(new NotificationCompat.WearableExtender().setBackground(bitmap));
-                Log.e("Waterlog", "Successfully set background (allegedly)");
+                Log.e(Waterlog.TAG, "Successfully set background (allegedly)");
             } catch (IOException ignored) {
-                Log.e("Waterlog", "Error setting background bitmap, " + ignored);
+                Log.e(Waterlog.TAG, "Error setting background bitmap, " + ignored);
             }
 
+            builder.setLights(0xFF00FFFF, 1000, 1000);
 
             if (prefs.getBoolean(SettingsActivity.KEY_FANCY_VIBRATION, false)) {
                 long dit = 70L;
@@ -120,15 +128,18 @@ public class WaterlogReceiver extends BroadcastReceiver {
 		} else if (DRINK_ACTION.equals(intent.getAction())){
 			Waterlog.drink(context, intent.getIntExtra("oz", 12), intent.getStringExtra("msg"));
         } else if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+            Log.e(Waterlog.TAG, "System rebooted");
             long lastDrink = prefs.getLong(SettingsActivity.LAST_DRINK_TIME, 0L);
             int ozToday = prefs.getInt(SettingsActivity.OZ_TODAY, 0);
             int goal = SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_GOAL);
-            boolean isToday = DateUtils.isToday(lastDrink);
             if (ozToday >= goal) {
+                Log.e(Waterlog.TAG, "Following reboot, we've already finished. Setting alarm for the morning.");
                 //We've had enough, so set the alarm for the first thing in the morning.
                 //But we need isToday to tell us whether it's this morning or tomorrow morning.
+                boolean isToday = DateUtils.isToday(lastDrink);
                 Waterlog.setAlarmMorning(context, prefs, !isToday);
             } else {
+                Log.e(Waterlog.TAG, "Rebooted, still drinking, need to alarm at the next appropriate time.");
                 Waterlog.setAlarmAbs(context, lastDrink +
                         SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_DRINK_INTERVAL)
                                 * DateUtils.MINUTE_IN_MILLIS);
@@ -137,4 +148,23 @@ public class WaterlogReceiver extends BroadcastReceiver {
         }
     }
 
+    private static void dumpIntent(@Nullable Intent i){
+        if (i != null){
+            Log.e(Waterlog.TAG, "Got intent "+i);
+        } else {
+            Log.e(Waterlog.TAG, "Got a null intent!");
+        }
+
+        Bundle bundle = i.getExtras();
+        if (bundle != null) {
+            Set<String> keys = bundle.keySet();
+            Iterator<String> it = keys.iterator();
+            Log.e(Waterlog.TAG,"Dumping Intent start");
+            while (it.hasNext()) {
+                String key = it.next();
+                Log.e(Waterlog.TAG,"[" + key + "=" + bundle.get(key)+"]");
+            }
+            Log.e(Waterlog.TAG,"Dumping Intent end");
+        }
+    }
 }

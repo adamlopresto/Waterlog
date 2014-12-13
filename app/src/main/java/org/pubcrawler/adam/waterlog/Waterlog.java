@@ -16,6 +16,7 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,8 +29,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Calendar;
+import java.util.Date;
 
 public class Waterlog extends Activity implements OnClickListener, OnLongClickListener{
+    public static final String TAG = "Waterlog";
     private int drinksToday;
     private int ozToday;
     private long lastDrink;
@@ -40,7 +43,8 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
 	private TextView coffee;
 	private TextView work;
 
-    private int hilightedColor = 0xFF00bcd4;
+    //private final int hilightedColor = 0xFF00bcd4;
+    private int hilightedColor;
 
     public static void drink(@NotNull Context context, int oz, String msg) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -57,11 +61,14 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
         drinksToday++;
         lastDrink = System.currentTimeMillis();
 
+        Log.e(TAG, "Just took a drink. New values: "+drinksToday+" drinks, "+ozToday+" oz");
+
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(SettingsActivity.DRINKS_TODAY, drinksToday);
         editor.putInt(SettingsActivity.OZ_TODAY, ozToday);
         editor.putLong(SettingsActivity.LAST_DRINK_TIME, lastDrink);
-        editor.commit();
+        if (!editor.commit())
+            Log.e(TAG, "Failed to update SharedPreferences after drink");
 
         if (ozToday < SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_GOAL)) {
             Toast.makeText(context, TextUtils.concat(context.getText(R.string.drink_recorded), msg), Toast.LENGTH_LONG).show();
@@ -111,7 +118,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
         PendingIntent contentIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, 0);
 
         manager.set(AlarmManager.RTC_WAKEUP, wakeUpTime, contentIntent);
-        //Log.d("Waterlog", new Date(wakeUpTime).toString());
+        Log.e(TAG, "Setting alarm for " + new Date(wakeUpTime).toString());
     }
 
     /**
@@ -159,6 +166,8 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        hilightedColor = getResources().getColor(R.color.app_theme);
 
         setContentView(R.layout.main);
 
@@ -213,6 +222,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
     public void onResume() {
         super.onResume();
         handler.postDelayed(updater, 200);
+        Log.e(TAG, "Opened window");
     }
 
     @Override
@@ -312,7 +322,8 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
         editor.putInt(SettingsActivity.DRINKS_TODAY, drinksToday);
         editor.putInt(SettingsActivity.OZ_TODAY, ozToday);
         editor.putLong(SettingsActivity.LAST_DRINK_TIME, lastDrink);
-        editor.commit();
+        if (!editor.commit())
+            Log.e(TAG, "Failed to commit to SharedPreferences in updatePrefs");
     }
     
     private void updateText(){

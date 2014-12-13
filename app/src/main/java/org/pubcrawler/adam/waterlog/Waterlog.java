@@ -221,6 +221,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
     @Override
     public void onResume() {
         super.onResume();
+        updateText();
         handler.postDelayed(updater, 200);
         Log.e(TAG, "Opened window");
     }
@@ -359,17 +360,17 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
             resetBackground(work);
     }
 
-    private void resetBackground(View v) {
-        if (v != null)
-            v.setBackgroundResource(android.R.drawable.btn_default);
+    private void resetBackground(@NotNull View v) {
+        Drawable d = v.getBackground();
+        if (d != null)
+            d.setColorFilter(null);
+
     }
 
-    private void highlight(View v) {
-        if (v != null) {
-            Drawable d = v.getBackground();
-            if (d != null)
-                d.setColorFilter(hilightedColor, PorterDuff.Mode.MULTIPLY);
-        }
+    private void highlight(@NotNull View v) {
+        Drawable d = v.getBackground();
+        if (d != null)
+            d.setColorFilter(hilightedColor, PorterDuff.Mode.MULTIPLY);
     }
 
     public enum DrinkType {

@@ -230,6 +230,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
     public void onPause() {
         super.onPause();
         handler.removeCallbacks(updater);
+        sendBroadcast(new Intent(this, WaterlogReceiver.class).putExtra("background", true).setAction(WaterlogReceiver.ALARM_ACTION));
     }
 
     @Override

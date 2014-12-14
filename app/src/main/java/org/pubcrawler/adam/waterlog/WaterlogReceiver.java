@@ -35,7 +35,9 @@ public class WaterlogReceiver extends BroadcastReceiver {
         dumpIntent(intent);
 
 		if (ALARM_ACTION.equals(intent.getAction())){
-			Waterlog.setAlarmRel(context, SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_REPEAT_INTERVAL)*DateUtils.MINUTE_IN_MILLIS);
+            boolean background = intent.getBooleanExtra("background", false);
+            if (!background)
+                Waterlog.setAlarmRel(context, SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_REPEAT_INTERVAL)*DateUtils.MINUTE_IN_MILLIS);
 
             NotificationManagerCompat mNotificationManager = NotificationManagerCompat.from(context);
 
@@ -46,8 +48,7 @@ public class WaterlogReceiver extends BroadcastReceiver {
 	    	NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 	    	//Notification notification = new Notification(icon, tickerText, when);
 	    	builder.setSmallIcon(icon).setTicker(tickerText);
-	
-	    	
+
 	    	int drinksToday = prefs.getInt("DRINKS_TODAY", 0);
 	    	int ozToday = prefs.getInt("OZ_TODAY", 0);
 	    	long lastDrink = prefs.getLong("LAST_DRINK_TIME", 0L);
@@ -73,33 +74,35 @@ public class WaterlogReceiver extends BroadcastReceiver {
                 Log.e(Waterlog.TAG, "Error setting background bitmap, " + ignored);
             }
 
-            builder.setLights(0xFF00FFFF, 1000, 1000);
-
-            if (prefs.getBoolean(SettingsActivity.KEY_FANCY_VIBRATION, false)) {
-                long dit = 70L;
-                long da = dit * 3;
-                //noinspection UnnecessaryLocalVariable
-                long space = dit;
-                //noinspection UnnecessaryLocalVariable
-                long letter = da;
-                long[] vibrate = {0,
-                        da, space, dit, space, dit, //D
-                        letter,
-                        dit, space, da, space, dit,    //R
-                        letter,
-                        dit, space, dit,            //I
-                        letter,
-                        da, space, dit,                //N
-                        letter,
-                        da, space, dit, space, da    //K
-                };
-                builder.setVibrate(vibrate);
+            if (background){
+                builder.setPriority(NotificationCompat.PRIORITY_MIN);
             } else {
-                builder.setVibrate(new long[]{0, 300});
-            }
+                builder.setLights(0xFF00FFFF, 1000, 1000);
+                if (prefs.getBoolean(SettingsActivity.KEY_FANCY_VIBRATION, false)) {
+                    long dit = 70L;
+                    long da = dit * 3;
+                    //noinspection UnnecessaryLocalVariable
+                    long space = dit;
+                    //noinspection UnnecessaryLocalVariable
+                    long letter = da;
+                    long[] vibrate = {0,
+                            da, space, dit, space, dit, //D
+                            letter,
+                            dit, space, da, space, dit,    //R
+                            letter,
+                            dit, space, dit,            //I
+                            letter,
+                            da, space, dit,                //N
+                            letter,
+                            da, space, dit, space, da    //K
+                    };
+                    builder.setVibrate(vibrate);
+                } else {
+                    builder.setVibrate(new long[]{0, 300});
+                }
 
-	    	//builder.setSound(Uri.withAppendedPath(Audio.Media.INTERNAL_CONTENT_URI, "14"));
-            builder.setSound(Uri.parse(prefs.getString(SettingsActivity.KEY_RINGTONE, "")));
+                builder.setSound(Uri.parse(prefs.getString(SettingsActivity.KEY_RINGTONE, "")));
+            }
 
 	    	Waterlog.DrinkType next = Waterlog.whatsNext(context);
 	    	if (next != null){

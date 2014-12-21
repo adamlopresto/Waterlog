@@ -1,6 +1,5 @@
 package org.pubcrawler.adam.waterlog;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
@@ -13,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
@@ -31,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Calendar;
 import java.util.Date;
 
-public class Waterlog extends Activity implements OnClickListener, OnLongClickListener{
+public class Waterlog extends ActionBarActivity implements OnClickListener, OnLongClickListener{
     public static final String TAG = "Waterlog";
     private int drinksToday;
     private int ozToday;
@@ -167,7 +167,7 @@ public class Waterlog extends Activity implements OnClickListener, OnLongClickLi
 
         super.onCreate(savedInstanceState);
 
-        hilightedColor = getResources().getColor(R.color.app_theme);
+        hilightedColor = getResources().getColor(R.color.colorPrimary);
 
         setContentView(R.layout.main);
 

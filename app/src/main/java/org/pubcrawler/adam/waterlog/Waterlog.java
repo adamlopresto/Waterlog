@@ -82,6 +82,9 @@ public class Waterlog extends ActionBarActivity implements OnClickListener, OnLo
 
             setAlarmMorning(context, prefs, false);
         }
+        context.sendBroadcast(
+                new Intent(context, WaterlogReceiver.class)
+                        .putExtra("background", true).setAction(WaterlogReceiver.ALARM_ACTION));
     }
 
     /**
@@ -372,20 +375,6 @@ public class Waterlog extends ActionBarActivity implements OnClickListener, OnLo
         Drawable d = v.getBackground();
         if (d != null)
             d.setColorFilter(hilightedColor, PorterDuff.Mode.MULTIPLY);
-    }
-
-    public enum DrinkType {
-        Home(12), Work(16), Coffee(8);
-
-        private final int oz;
-
-        DrinkType(int oz) {
-            this.oz = oz;
-        }
-
-        public int oz() {
-            return oz;
-        }
     }
 
 }

@@ -153,8 +153,10 @@ public class WaterlogReceiver extends BroadcastReceiver {
                         new NotificationCompat.Action.Builder(R.drawable.ic_action_accept, "Other", drinkPI)
                                 .addRemoteInput(remoteInput)
                                 .build();
-                if (drinkAction != null)
+                if (drinkAction != null) {
                     extender.addAction(drinkAction);
+                    //extender.setContentAction(0);
+                }
                 extender.addAction(otherAction);
                 extender.addAction(snoozeAction);
                 builder.extend(extender);

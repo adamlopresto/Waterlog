@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.StringRes;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -71,11 +72,11 @@ public class Waterlog extends ActionBarActivity implements OnClickListener, OnLo
             Log.e(TAG, "Failed to update SharedPreferences after drink");
 
         if (ozToday < SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_GOAL)) {
-            Toast.makeText(context, TextUtils.concat(context.getText(R.string.drink_recorded), msg), Toast.LENGTH_LONG).show();
+            toast(context, TextUtils.concat(context.getText(R.string.drink_recorded), msg));
             setAlarmRel(context, DateUtils.MINUTE_IN_MILLIS *
                     SettingsActivity.getIntPref(prefs, SettingsActivity.KEY_DRINK_INTERVAL));
         } else {
-            Toast.makeText(context, R.string.end_of_day, Toast.LENGTH_LONG).show();
+            toast(context, R.string.end_of_day);
 
             TaskerIntent i = new TaskerIntent("Finished drinking");
             context.sendBroadcast(i);
@@ -85,6 +86,16 @@ public class Waterlog extends ActionBarActivity implements OnClickListener, OnLo
         context.sendBroadcast(
                 new Intent(context, WaterlogReceiver.class)
                         .putExtra("background", true).setAction(WaterlogReceiver.ALARM_ACTION));
+    }
+
+    private static void toast(@NotNull Context context, CharSequence msg) {
+        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+        TaskerIntent i = new TaskerIntent("Toast on Wear");
+        i.addParameter(msg.toString());
+        context.sendBroadcast(i);
+    }
+    private static void toast(@NotNull Context context, @StringRes int resId){
+        toast(context, context.getText(resId));
     }
 
     /**

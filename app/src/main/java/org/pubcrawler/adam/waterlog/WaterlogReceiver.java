@@ -28,6 +28,7 @@ public class WaterlogReceiver extends BroadcastReceiver {
     public static final String ALARM_ACTION = "ALARM";
 	public static final String DRINK_ACTION = "DRINK";
     public static final String DRINK_OTHER_ACTION = "DRINK_OTHER";
+    public static final String DRINK_DEFAULT_ACTION = "DRINK_DEFAULT";
 	public static final String SNOOZE_ACTION = "SNOOZE";
     private static final String EXTRA_VOICE_REPLY = "extra_voice_reply";
 
@@ -80,6 +81,7 @@ public class WaterlogReceiver extends BroadcastReceiver {
 	    	builder.setContentIntent(contentIntent);
 	    	builder.setContentTitle(contentTitle);
 	    	builder.setContentText(contentText);
+            builder.setCategory(NotificationCompat.CATEGORY_EVENT);
 	    	//notification.defaults |= Notification.DEFAULT_SOUND;
 
 
@@ -175,6 +177,11 @@ public class WaterlogReceiver extends BroadcastReceiver {
                     SettingsActivity.KEY_DRINK_INTERVAL)*DateUtils.MINUTE_IN_MILLIS);
 		} else if (DRINK_ACTION.equals(intent.getAction())) {
             Waterlog.drink(context, intent.getIntExtra("oz", 12), intent.getStringExtra("msg"));
+        } else if (DRINK_DEFAULT_ACTION.equals(intent.getAction())){
+		    DrinkType next = Waterlog.whatsNext(context);
+		    if (next != null){
+                Waterlog.drink(context, next.oz(), next.name());
+            }
         } else if (DRINK_OTHER_ACTION.equals(intent.getAction())){
             Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
             if (remoteInput != null){

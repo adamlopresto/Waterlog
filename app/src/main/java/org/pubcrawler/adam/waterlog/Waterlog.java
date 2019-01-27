@@ -164,18 +164,16 @@ public class Waterlog extends ActionBarActivity implements OnClickListener, OnLo
             return null;
         }
 
-        /*
         Calendar cal = Calendar.getInstance();
         switch (cal.get(Calendar.DAY_OF_WEEK)) {
             case Calendar.SATURDAY:
             case Calendar.SUNDAY:
-          */
                 if (drinksToday < 1)
                     return DrinkType.Coffee;
                 return DrinkType.Home;
-        /*    default:
+            default:
                 return DrinkType.Work;
-        }*/
+        }
     }
 
     @Override

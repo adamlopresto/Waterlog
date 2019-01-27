@@ -3,7 +3,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion '25.0.0'
 
     defaultConfig {
         minSdkVersion 15
@@ -19,7 +18,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:21.0.3'
-    compile 'com.android.support:appcompat-v7:21.0.3'
-    compile 'com.intellij:annotations:+@jar'
+    implementation 'com.android.support:support-v4:21.0.3'
+    implementation 'com.android.support:appcompat-v7:21.0.3'
+    implementation 'com.intellij:annotations:+@jar'
 }
